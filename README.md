@@ -122,29 +122,29 @@ Visit [localhost:3000](http://localhost:3000) and sign up as a new user.
    rails db:migrate
    ```
 
-8. Edit actions index and guide in `app/controllers/welcome_controller.rb`:
+9. Edit actions index and guide in `app/controllers/welcome_controller.rb`:
 
-9. Install `authy-devise`
+10. Install `authy-devise`
 
    ```bash
    rails generate devise_authy:install
    ```
 
-10. Open `config/initializers/authy.rb` and add your Authy API key (generate one in the [Twilio Console](https://www.twilio.com/console/authy/applications))
+11. Open `config/initializers/authy.rb` and add your Authy API key (generate one in the [Twilio Console](https://www.twilio.com/console/authy/applications))
 
     ```ruby
     Authy.api_key = "YOUR_API_KEY"
     Authy.api_uri = "https://api.authy.com/"
     ```
 
-11. Add `authy-devise` to the `User` model, change the default value `:authy_enabled` to the `true` and run the resulting migration
+12. Add `authy-devise` to the `User` model, change the default value `:authy_enabled` to the `true` and run the resulting migration
 
     ```bash
     rails generate devise_authy User
     rails db:migrate
     ```
     
-12. Add the `phone` field to the User table.
+13. Add the `phone` field to the User table.
 
     ```bash
     rails generate migration AddPhoneToUsers
@@ -154,11 +154,11 @@ Visit [localhost:3000](http://localhost:3000) and sign up as a new user.
     rails db:migrate
     ```
     
-13. Сonfigure permitted parameter `phone` for `devise_controller` in `ApplicationController`.
+14. Сonfigure permitted parameter `phone` for `devise_controller` in `ApplicationController`.
 
-14. Add `text_field` (form-group item) for the parameter `phone` in `views/devise/registrations`.
+15. Add `text_field` (form-group item) for the parameter `phone` in `views/devise/registrations`.
 
-15. Implement the logic for managing two-factor user authentication.
+16. Implement the logic for managing two-factor user authentication.
 
     1. Insert redirects to `user_enable_authy_path` and `user_verify_authy_installation_path` in `welcome#index` according to the `user_signed_in?` status and the values of user parameters `authy_enabled`, `authy_id`, and `last_sign_in_with_authy`.
     
@@ -183,12 +183,14 @@ Visit [localhost:3000](http://localhost:3000) and sign up as a new user.
      end
     ```
 
-16. Run the server and visit http://localhost:3000/users/sign_up to create a user
+17. Run the server and visit http://localhost:3000/users/sign_up to create a user
 
     ```bash
     rails server
     ```
 
-17. When signed in, visit http://localhost:3000/users/enable_authy to enable 2FA
+18. Complete the two-factor identification procedure. Then you will no longer need to go through it.
 
-18. Sign out and sign back in again and you will be required to enter your 2FA token
+19. When signed in, visit http://localhost:3000/users/enable_authy to enable 2FA
+
+20. Sign out and sign back in again and you will be required to enter your 2FA token
