@@ -1,17 +1,43 @@
-<div class="empty">
-  <h1>Welcome</h1>
-  <p>
-    This is a sample app to show how to use <%= link_to content_tag("code", "authy-devise"), "https://github.com/authy/authy-devise/" %>
-  </p>
-  <div class="empty-icon">
-    <i class="icon icon-people icon-3x"></i>
-  </div>
-  <p class="empty-title h5">You're not signed in</p>
-  <p class="empty-subtitle">Click below to sign up or sign in</p>
-  <div class="empty-action">
-    <%= link_to "Sign up", new_user_registration_path, class: "btn" %>
-    <%= link_to "Sign in", new_user_session_path, class: "btn" %>
-  </div>
-</div>
+<% if user_signed_in? %>
+  <div class="empty">
+    <h1>Welcome</h1>
+    <p>
+      This is a sample app to show how to use <%= link_to content_tag("code", "authy-devise"), "https://github.com/authy/authy-devise/" %>
+    </p>
+    <div class="empty-icon">
+      <%= image_tag gravatar_url(current_user.email, 64), width: 64, height: 64, class: "avatar avatar-xl" %>
+    </div>
+    <p class="empty-title h5">You are signed in as <%= current_user.email %></p>
 
-<%= render "instructions" %>
+    <div class="empty-action">
+      <% if current_user.authy_enabled %>
+        <p class="empty-title h6">Two factor authentication is enabled 👍</p>
+        <%= link_to "Disable 2FA",  user_disable_authy_path, method: 'POST', class: "btn btn-sm btn-error" %>
+      <% else %>
+        <%= link_to "Enable 2FA",  user_enable_authy_path, class: "btn btn-primary" %>
+      <% end %>
+    </div>
+
+    <div class="empty-action">
+      <h3>Open guide</h3>
+      <%= link_to "Click here",  guide_path, class: "btn btn-success" %>
+      
+    </div>
+  </div>
+<% else %>
+  <div class="empty">
+    <h1>Welcome</h1>
+    <p>
+      This is a sample app to show how to use <%= link_to content_tag("code", "authy-devise"), "https://github.com/authy/authy-devise/" %>
+    </p>
+    <div class="empty-icon">
+      <i class="icon icon-people icon-3x"></i>
+    </div>
+    <p class="empty-title h5">You're not signed in</p>
+    <p class="empty-subtitle">Click below to sign up or sign in</p>
+    <div class="empty-action">
+      <%= link_to "Sign up", new_user_registration_path, class: "btn" %>
+      <%= link_to "Sign in", new_user_session_path, class: "btn" %>
+    </div>
+  </div>
+<% end %>

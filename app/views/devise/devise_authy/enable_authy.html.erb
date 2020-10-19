@@ -4,15 +4,14 @@
       <h2><%= I18n.t('authy_register_title', {:scope => 'devise'}) %></h2>
     </div>
 
-
     <%= enable_authy_form class: "card-body authy-form" do %>
       <div class="form-group">
         <%= label_tag "authy-countries", I18n.t('devise.country'), class: "form-label" %>
-        <%= text_field_tag :country_code, '', :autocomplete => :off, :placeholder => I18n.t('devise.country'), :id => "authy-countries", class: "form-input" %>
+        <%= text_field_tag :country_code, "#{@resource.country_code}", :autocomplete => :off, :placeholder => I18n.t('devise.country'), :id => "authy-countries", class: "form-input" %>
       </div>
       <div class="form-group">
         <%= label_tag 'authy-cellphone', I18n.t('devise.cellphone'), class: "form-label" %>
-        <%= text_field_tag :cellphone, '', :autocomplete => :off, :placeholder => I18n.t('devise.cellphone'), :id => "authy-cellphone", class: "form-input" %>
+        <%= text_field_tag :cellphone, "#{@resource.phone_number}", :autocomplete => :off, :placeholder => I18n.t('devise.cellphone'), :id => "authy-cellphone", class: "form-input" %>
       </div>
       <div class="actions">
         <%= button_tag I18n.t('enable_authy', {:scope => 'devise'}), type: "submit", class: "btn btn-primary" %>
