@@ -1,6 +1,8 @@
 # Authy Devise Demo
 
 This is a demo of using [Devise](https://github.com/plataformatec/devise) and [Authy](https://www.twilio.com/docs/authy) together with the [`authy-devise`](https://github.com/twilio/authy-devise) gem to add two factor authentication to a Rails application.
+### Description of the issue being solved in this example.
+You have content on the resource that can only be accessed after a single user identification by phone number. During registration, you confirm your phone number by receiving a code from an SMS. During subsequent authorizations, you no longer ask the user for a confirmation code. If necessary, you still have the option to re-identify the user with two-factor authentication.
 
 ## Running this demo
 
@@ -9,7 +11,7 @@ This demo was built with Ruby 2.5.1, but should run with any Ruby version that i
 To run this application download or clone it from GitHub, change into the directory and install the dependencies:
 
 ```bash
-git clone https://github.com/twilio/authy-devise-demo.git
+git clone https://github.com/rubygitflow/authy-devise-demo.git
 cd authy-devise-demo
 bundle install
 ```
@@ -57,19 +59,19 @@ Visit [localhost:3000](http://localhost:3000) and sign up as a new user.
 2. Generate a controller
 
    ```bash
-   rails generate controller welcome index signed_in
+   rails generate controller welcome index guide
    ```
 
-3. Add a root path and signed in path to your `config/routes.rb`
+3. Add a root path and guide path to your `config/routes.rb`
 
    ```ruby
    Rails.application.routes.draw do
-     get "signed_in", to: "welcome#signed_in"
+     get "guide", to: "welcome#guide"
      root :to => 'welcome#index'
    end
    ```
 
-4. Update the root and signed in views
+4. Update the root and guide views
 
    ```erb
    # app/views/welcome/index.html.erb
@@ -79,16 +81,17 @@ Visit [localhost:3000](http://localhost:3000) and sign up as a new user.
    ```
 
    ```erb
-   # app/views/welcome/signed_in.html.erb
+   # app/views/welcome/guide.html.erb
    <h1>Welcome to the sample app</h1>
    <p>You are signed in as <%= current_user.email %></p>
    ```
 
-5. Add the `devise` and `devise-authy` gems to your `Gemfile` and install
+5. Add the `devise`, `devise-authy` and `phony_rails` gems to your `Gemfile` and install
 
    ```ruby
    gem 'devise', '~> 4.5'
    gem 'devise-authy', '~> 1.9'
+   gem 'phony_rails'
    ```
 
    ```bash
@@ -119,20 +122,7 @@ Visit [localhost:3000](http://localhost:3000) and sign up as a new user.
    rails db:migrate
    ```
 
-8. Edit `app/controllers/welcome_controller.rb` and add:
-
-   ```ruby
-   class WelcomeController < ApplicationController
-     before_action :authenticate_user!, only: :signed_in
-
-     def index
-       redirect_to signed_in_path if user_signed_in?
-     end
-
-     def signed_in
-     end
-   end
-   ```
+8. Edit actions index and guide in `app/controllers/welcome_controller.rb`:
 
 9. Install `authy-devise`
 
@@ -147,19 +137,58 @@ Visit [localhost:3000](http://localhost:3000) and sign up as a new user.
     Authy.api_uri = "https://api.authy.com/"
     ```
 
-11. Add `authy-devise` to the `User` model and run the resulting migration
+11. Add `authy-devise` to the `User` model, change the default value `:authy_enabled` to the `true` and run the resulting migration
 
     ```bash
     rails generate devise_authy User
     rails db:migrate
     ```
+    
+12. Add the `phone` field to the User table.
 
-12. Run the server and visit http://localhost:3000/users/sign_up to create a user
+    ```bash
+    rails generate migration AddPhoneToUsers
+    ```
+    Change description in up- and down- functions
+    ```bash
+    rails db:migrate
+    ```
+    
+13. Сonfigure permitted parameter `phone` for `devise_controller` in `ApplicationController`.
+
+14. Add `text_field` (form-group item) for the parameter `phone` in `views/devise/registrations`.
+
+15. Implement the logic for managing two-factor user authentication.
+
+    1. Insert redirects to `user_enable_authy_path` and `user_verify_authy_installation_path` in `welcome#index` according to the `user_signed_in?` status and the values of user parameters `authy_enabled`, `authy_id`, and `last_sign_in_with_authy`.
+    
+    ```ruby
+    if user_signed_in? && current_user.authy_enabled && !current_user.authy_id && !current_user.last_sign_in_with_authy
+		redirect_to user_enable_authy_path
+	 elsif user_signed_in? && current_user.authy_enabled && current_user.authy_id && !current_user.last_sign_in_with_authy
+		current_user.authy_turn_off 
+		redirect_to user_verify_authy_installation_path
+    end
+    ```
+    
+    2. Set to disable 2FA in `ApplicationController` using the same set of parameters after oathy-confirmation.
+    
+     ```ruby
+     before_action :oathy_confirmation
+     private
+     def oathy_confirmation
+       if user_signed_in? && current_user.authy_enabled && current_user.last_sign_in_with_authy
+         current_user.authy_turn_off
+       end
+     end
+    ```
+
+16. Run the server and visit http://localhost:3000/users/sign_up to create a user
 
     ```bash
     rails server
     ```
 
-13. When signed in, visit http://localhost:3000/users/enable_authy to enable 2FA
+17. When signed in, visit http://localhost:3000/users/enable_authy to enable 2FA
 
-14. Sign out and sign back in again and you will be required to enter your 2FA token
+18. Sign out and sign back in again and you will be required to enter your 2FA token
