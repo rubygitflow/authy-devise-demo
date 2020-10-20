@@ -6,12 +6,11 @@
 
     <%= verify_authy_installation_form class: 'card-body authy-form' do %>
       <legend><%= I18n.t('submit_token_title', {:scope => 'devise'}) %></legend>
+      <div class="form-group">1. <%= authy_request_sms_link %></div>
       <div class="form-group">
-        <%= label_tag 'authy-token', 'Token', class: 'form-label' %>
+        <%= label_tag 'authy-token', '2. Enter token', class: 'form-label', style:"font-size:.8rem" %>
         <%= text_field_tag :token, "", :autocomplete => :off, :id => 'authy-token', class: 'form-input' %>
       </div>
-
-      <p><%= authy_request_sms_link %></p>
 
       <div class="actions">
         <%= submit_tag I18n.t('enable_my_account', {:scope => 'devise'}), :class => 'btn' %>

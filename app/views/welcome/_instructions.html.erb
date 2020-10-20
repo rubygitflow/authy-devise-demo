@@ -10,29 +10,30 @@
         <li>
           Create a new Rails application
           <pre class="code"><code>rails new authy-devise-demo
-  cd authy-devise-demo</code></pre>
+cd authy-devise-demo</code></pre>
         </li>
         <li>Generate a controller
-          <pre class="code"><code>rails generate controller welcome index signed_in</code></pre>
+          <pre class="code"><code>rails generate controller welcome index guide</code></pre>
         </li>
-        <li>Add a root path and signed in path to your `config/routes.rb`
+        <li>Add a root path and guide path to your <code>config/routes.rb</code>
           <pre class="code" data-lang="ruby"><code>Rails.application.routes.draw do
-  get "signed_in", to: "welcome#signed_in"
+  get "guide", to: "welcome#guide"
   root :to => 'welcome#index'
 end</code></pre>
         </li>
-        <li>Update the root and signed in views
+        <li>Update the root and guide views
           <pre class="code"><code># app/views/welcome/index.html.erb
 &lt;h1&gt;Welcome to the sample app&lt;/h1&gt;
 &lt;p&gt;&lt;%= link_to "Sign up", new_user_registration_path %&gt;&lt;/p&gt;
 &lt;p&gt;&lt;%= link_to "Sign in", new_user_session_path %&gt;&lt;/p&gt;</code></pre>
-          <pre class="code"><code># app/views/welcome/signed_in.html.erb
+          <pre class="code"><code># app/views/welcome/guide.html.erb
 &lt;h1&gt;Welcome to the sample app&lt;/h1&gt;
 &lt;p&gt;You are signed in as &lt;%= current_user.email %&gt;&lt;/p&gt;</code></pre>
         </li>
-        <li>Add the `devise` and `devise-authy` gems to your `Gemfile` and install
-          <pre class="code"><code>  gem 'devise', '~> 4.5'
-  gem 'devise-authy', '~> 1.9'</code></pre>
+        <li>Add the <code>devise</code> and <code>devise-authy</code> gems to your <code>Gemfile</code> and install
+          <pre class="code"><code>gem 'devise', '~> 4.5'
+gem 'devise-authy', '~> 1.9'
+gem 'phony_rails'</code></pre>
           <pre class="code"><code>bundle install</code></pre>
         </li>
         <li>Install devise
@@ -48,30 +49,49 @@ end</code></pre>
           <pre class="code"><code>rails generate devise User
 rails db:migrate</code></pre>
         </li>
-        <li>Edit <code>app/controllers/welcome_controller.rb</code> and add:
-          <pre class="code"><code>class WelcomeController < ApplicationController
-  before_action :authenticate_user!, only: :signed_in
-
-  def index
-    redirect_to signed_in_path if user_signed_in?
-  end
-
-  def signed_in
-  end
-end</code></pre>
-        <li>Install <code>authy-devise </code>
+        <li>Edit actions index and guide in <code>app/controllers/welcome_controller.rb</code>
+          
+        <li>Install <code>authy-devise</code>
           <pre class="code"><code>rails generate devise_authy:install</code></pre>
         </li>
         <li>Open <code>config/initializers/authy.rb</code> and add your Authy API key (generate one in the <a href="https://www.twilio.com/console/authy/applications">Twilio Console</a>)
           <pre class="code"><code>Authy.api_key = "YOUR_API_KEY"
 Authy.api_uri = "https://api.authy.com/"</code></pre>
         </li>
-        <li>Add <code>authy-devise</code> to the <code>User</code> model and run the resulting migration
+        <li>Add <code>authy-devise</code> to the <code>User</code> model, change the default value <code>:authy_enabled</code> to the <code>true</code> and run the resulting migration
           <pre class="code"><code>rails generate devise_authy User
 rails db:migrate</code></pre>
         </li>
+        <li>Add the <code>Phone</code> field to the <code>User</code> table.
+          <pre class="code"><code>rails generate migration AddPhoneToUsers</code></pre>
+          Change description in up- and down- functions
+          <pre class="code"><code>rails db:migrate</code></pre>
+        </li>
+        <li>Сonfigure permitted parameter <code>phone</code> for <code>devise_controller</code> in <code>ApplicationController</code>.
+        </li>
+        <li>Add <code>text_field</code> (form-group item) for the parameter phone in <code>views/devise/registrations</code>.
+        </li>
+        <li>Implement the logic for managing two-factor user authentication. <br>
+          — Insert redirects to <code>user_enable_authy_path</code> and <code>user_verify_authy_installation_path</code> in <code>welcome#index</code> according to the <code>user_signed_in?</code> status and the values of user parameters <code>authy_enabled</code>, <code>authy_id</code>, and <code>last_sign_in_with_authy</code>.
+          <pre class="code"><code>if user_signed_in? && current_user.authy_enabled && !current_user.authy_id && !current_user.last_sign_in_with_authy
+  redirect_to user_enable_authy_path
+elsif user_signed_in? && current_user.authy_enabled && current_user.authy_id && !current_user.last_sign_in_with_authy
+  current_user.authy_turn_off 
+  redirect_to user_verify_authy_installation_path
+end</code></pre>
+          — Set to disable 2FA in <code>ApplicationController</code> using the same set of parameters after oathy-confirmation.<br>
+          <pre class="code"><code>before_action :oathy_confirmation
+private
+def oathy_confirmation
+  if user_signed_in? && current_user.authy_enabled && current_user.last_sign_in_with_authy
+    current_user.authy_turn_off
+  end
+end</code></pre>
+        </li>
         <li>Run the server and visit <a href="http://localhost:3000/users/sign_up">http://localhost:3000/users/sign_up</a> to create a user
           <pre class="code"><code>rails server</code></pre>
+        </li>
+        <li>Complete the two-factor identification procedure. Then you will no longer need to go through it.
         </li>
         <li>When signed in, visit <a href="http://localhost:3000/users/enable_authy">http://localhost:3000/users/enable_authy</a> to enable 2FA</li>
         <li>Sign out and sign back in again and you will be required to enter your 2FA token</li>

@@ -29,6 +29,6 @@ class User < ApplicationRecord
   end
 
   def random_email
-    random_string+'.'+random_string+'@email.com'
+    random_string+'@email.com'
   end
 end
