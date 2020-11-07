@@ -17,18 +17,18 @@ class User < ApplicationRecord
     format: { with: EMAIL_VALIDATION, message: "Invalid email format" }
 
   def country_code
-    PhonyRails.country_code_from_number(phone)
+    @country_code ||= PhonyRails.country_code_from_number(phone)
   end  
 
   def phone_number
-    phone
+    @phone_number ||= Phony.formatted(Phony.normalize(phone))
   end  
+
+  def random_email
+    @random_email ||= random_string+'@email.com'
+  end
 
   def authy_turn_off
     update!(authy_enabled: false)
-  end
-
-  def random_email
-    random_string+'@email.com'
   end
 end
