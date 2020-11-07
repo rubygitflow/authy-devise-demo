@@ -160,7 +160,7 @@ Visit [localhost:3000](http://localhost:3000) and sign up as a new user.
 
 16. Implement the logic for managing two-factor user authentication.
 
-    1. Insert redirects to `user_enable_authy_path` and `user_verify_authy_installation_path` in `welcome#index` according to the `user_signed_in?` status and the values of user parameters `authy_enabled`, `authy_id`, and `last_sign_in_with_authy`.
+    1. Insert redirects to `user_enable_authy_path` and `user_verify_authy_installation_path` in `welcome#index` according to the `user_signed_in?` status and the values of user parameters `authy_hook_enabled`, `authy_id`, and `last_sign_in_with_authy`.
     
     ```ruby
     if user_signed_in? && current_user.authy_hook_enabled && !current_user.authy_id && !current_user.last_sign_in_with_authy
@@ -172,14 +172,23 @@ Visit [localhost:3000](http://localhost:3000) and sign up as a new user.
     
     2. Set to disable 2FA in `ApplicationController` using the same set of parameters after oathy-confirmation.
     
-     ```ruby
-     before_action :oathy_confirmation
-     private
-     def oathy_confirmation
-       if user_signed_in? && current_user.authy_hook_enabled && current_user.last_sign_in_with_authy
-         current_user.authy_hook_turn_off
-       end
-     end
+    ```ruby
+    before_action :oathy_confirmation
+    private
+    def oathy_confirmation
+      if user_signed_in? && current_user.authy_hook_enabled && current_user.last_sign_in_with_authy
+        current_user.authy_hook_turn_off
+      end
+    end
+    ```
+    
+    3. Add `authy_hook_turn_off` procedure to the User model.
+    
+    ```ruby
+    def authy_hook_turn_off
+      update!(authy_hook_enabled: false)
+      update!(authy_enabled: false)  
+    end
     ```
 
 17. Run the server and visit http://localhost:3000/users/sign_up to create a user
