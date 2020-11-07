@@ -13,8 +13,8 @@ class ApplicationController < ActionController::Base
   private
 
   def oathy_confirmation
-    if user_signed_in? && current_user.authy_enabled && current_user.last_sign_in_with_authy
-      current_user.authy_turn_off
+    if user_signed_in? && current_user.authy_hook_enabled && current_user.last_sign_in_with_authy
+      current_user.authy_hook_turn_off
     end
   end
 end

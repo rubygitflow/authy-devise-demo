@@ -22,7 +22,8 @@ ActiveRecord::Schema.define(version: 2020_10_18_193253) do
     t.datetime "updated_at", null: false
     t.string "authy_id"
     t.datetime "last_sign_in_with_authy"
-    t.boolean "authy_enabled", default: true
+    t.boolean "authy_enabled", default: false
+    t.boolean "authy_hook_enabled", default: true
     t.string "phone", default: "", null: false
     t.index ["authy_id"], name: "index_users_on_authy_id"
     t.index ["email"], name: "index_users_on_email", unique: true

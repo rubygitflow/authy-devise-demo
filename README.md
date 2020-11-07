@@ -137,7 +137,7 @@ Visit [localhost:3000](http://localhost:3000) and sign up as a new user.
     Authy.api_uri = "https://api.authy.com/"
     ```
 
-12. Add `authy-devise` to the `User` model, change the default value `:authy_enabled` to the `true` and run the resulting migration
+12. Add `authy-devise` to the `User` model, add a new field `:authy_hook_enabled`  with the default value `true` to the file `db/migrate/XXXXXXXXXXXXXX_devise_authy_add_to_users.rb` and run the resulting migration
 
     ```bash
     rails generate devise_authy User
@@ -163,10 +163,9 @@ Visit [localhost:3000](http://localhost:3000) and sign up as a new user.
     1. Insert redirects to `user_enable_authy_path` and `user_verify_authy_installation_path` in `welcome#index` according to the `user_signed_in?` status and the values of user parameters `authy_enabled`, `authy_id`, and `last_sign_in_with_authy`.
     
     ```ruby
-    if user_signed_in? && current_user.authy_enabled && !current_user.authy_id && !current_user.last_sign_in_with_authy
+    if user_signed_in? && current_user.authy_hook_enabled && !current_user.authy_id && !current_user.last_sign_in_with_authy
 		redirect_to user_enable_authy_path
-    elsif user_signed_in? && current_user.authy_enabled && current_user.authy_id && !current_user.last_sign_in_with_authy
-		current_user.authy_turn_off 
+    elsif user_signed_in? && current_user.authy_hook_enabled && current_user.authy_id && !current_user.last_sign_in_with_authy
 		redirect_to user_verify_authy_installation_path
     end
     ```
@@ -177,8 +176,8 @@ Visit [localhost:3000](http://localhost:3000) and sign up as a new user.
      before_action :oathy_confirmation
      private
      def oathy_confirmation
-       if user_signed_in? && current_user.authy_enabled && current_user.last_sign_in_with_authy
-         current_user.authy_turn_off
+       if user_signed_in? && current_user.authy_hook_enabled && current_user.last_sign_in_with_authy
+         current_user.authy_hook_turn_off
        end
      end
     ```
